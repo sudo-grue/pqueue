@@ -15,7 +15,7 @@ typedef struct priority_queue pqueue;
 /**
  * @brief Struct that defines pointer to node within priority queue
  */
-typedef struct queue_node qnode;
+typedef struct pqueue_node qnode;
 
 /**
  * @brief Creates a priority queue
