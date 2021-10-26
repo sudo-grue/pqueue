@@ -1,6 +1,6 @@
 /** @file pqueue.h
- * @brief thread-safe priority queue library for void pointers
- *        Requires pthread library
+ * @brief thread-safe minimum priority queue (minque) library for void*
+ *        - Requires pthread library
  */
 #ifndef PQUEUE_H
 #define PQUEUE_H
@@ -8,37 +8,50 @@
 #include <stdbool.h>
 
 /**
- * @brief Struct that defines pointer to head node
+ * @brief Struct that defines pointer to min-node, pthread lock,
+ *        and del_f that knows how to delete custom void*
  */
-typedef struct priority_queue pqueue;
+typedef struct priority_queue pqueue_t;
 
 /**
- * @brief Struct that defines pointer to node within priority queue
+ * @brief User provided function to delete void* without memory leaks
  */
-typedef struct pqueue_node qnode;
+typedef void (*del_f)(void *data);
 
 /**
  * @brief Creates a priority queue
  * 
- * @return A newly malloc'd priority queue
+ * Provides user with the option of a custom delete function pending what
+ * datatype is stored within the queue.
+ *  - Built-in datatype : NULL
+ *  - "Simple" alloc'd  : free()
+ *  - Custom Structure  : User Provided Function
+ * 
+ * The purpose of this option, is so the library does not need to know
+ * anything about the user defined data structure to successfully delete
+ *
+ * @param capacity Maximum amount of elemnts that can be held in queue 
+ * @param del Function to delete void*. Pass NULL if not wanted
+ * @return pqueue_t* On success, NULL on failure
  */
-pqueue *pqueue_create();
+pqueue_t *pqueue_create(u_int16_t capacity, del_f del);
 
 /**
- * @brief Deletes a priority queue, freeing its resources (simple free only)
+ * @brief Deletes a priority queue, freeing resources used and
+ *        deleting any remaining items without warning
  * 
- * @param pq A queue to delete
+ * @param pq The queue to delete
  */
-void pqueue_delete(pqueue *pq);
+void pqueue_delete(pqueue_t *pq);
 
 /**
- * @brief Inserts a given item of a specified priority into a queue
+ * @brief Inserts void* of a specified priority into minque
  * 
- * @param pq A priority queue
- * @param item An void pointer item to insert
- * @param priority The item's priority value
+ * @param pq Priority queue to query
+ * @param item Void* element to insert
+ * @param priority Item's priority (0-4,294,967,295) where 0 is top priority
  */
-void pqueue_insert(pqueue *pq, void *item, unsigned long priority);
+void pqueue_insert(pqueue_t *pq, void *item, u_int16_t priority);
 
 /**
  * @brief Removes and returns the lowest-priority value from the queue
@@ -46,16 +59,23 @@ void pqueue_insert(pqueue *pq, void *item, unsigned long priority);
  * @param pq Target priority queue
  * @return Address of stored item
  */
-void *pqueue_extract(pqueue *pq);
+void *pqueue_extract(pqueue_t *pq);
 
 /**
- * @brief Used to determine if pqueue is empty
+ * @brief Used to determine if pqueue_t is empty
  * 
  * @param pq A priority queue
  * @return True on empty, else False
  */
-bool pqueue_is_empty(pqueue *pq);
+bool pqueue_is_empty(pqueue_t *pq);
+
+/**
+ * @brief Used to determine if pqueue_t is full
+ * 
+ * @param pq A priority queue
+ * @return True on full, else False
+ */
+bool pqueue_is_full(pqueue_t *pq);
 
 #endif /* PQUEUE_H */
-
 /*** END OF FILE ***/
