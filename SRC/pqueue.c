@@ -116,6 +116,7 @@ void pqueue_insert(pqueue_t *pq, void *item, u_int16_t priority)
     }
     heapify_up_unlock:
     pthread_mutex_unlock(&pq->lock);
+
 } /* pqueue_insert() */
 
 // Used after extraction to reorganize queue
@@ -129,23 +130,16 @@ static void heapify_down(u_int16_t position, u_int16_t size, qnode_t *heap)
         return;
     }
 
-    u_int16_t swap_idx = position;
-    if (heap[lchild].priority < heap[position].priority) {
-        if (rchild < size && heap[rchild].priority < heap[position].priority) {
-            swap_idx = rchild;
-        } else {
-            swap_idx = lchild;
-        }
-    }
+    u_int16_t swap_idx = heap[lchild].priority <
+                         heap[rchild].priority ? lchild : rchild;
 
-    if (swap_idx == position) {
-        return;
-    }
-    qnode_t temp = heap[swap_idx];
-    heap[swap_idx] = heap[position];
-    heap[position] = temp;
+    if (heap[position].priority > heap[swap_idx].priority) {
+        qnode_t temp   = heap[swap_idx];
+        heap[swap_idx] = heap[position];
+        heap[position] = temp;
 
-    heapify_down(swap_idx, size, heap);
+        heapify_down(swap_idx, size, heap);
+    }
 } /* heapify_down() */
 
 void *pqueue_extract(pqueue_t *pq)
@@ -182,5 +176,12 @@ bool pqueue_is_full(pqueue_t *pq)
 {
     return pq->capacity == pq->count;
 } /* pqueue_is_full() */
+
+void pqueue_print(pqueue_t *pq)
+{
+    qnode_t p = pq->heap[0];
+    char *c = p.node_data;
+    fprintf(stderr, "%d:%c\n", p.priority, *c);
+}
 
 /*** END OF FILE ***/

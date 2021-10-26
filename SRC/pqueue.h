@@ -77,5 +77,7 @@ bool pqueue_is_empty(pqueue_t *pq);
  */
 bool pqueue_is_full(pqueue_t *pq);
 
+void pqueue_print(pqueue_t *pq);
+
 #endif /* PQUEUE_H */
 /*** END OF FILE ***/
