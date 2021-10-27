@@ -79,22 +79,6 @@ void pqueue_delete(pqueue_t *pq)
     free(pq);
 } /* pqueue_delete() */
 
-static void heapify_up(u_int16_t position, qnode_t *heap)
-{
-    int32_t parent = (position - 1) / 2;
-    if (parent < 0) {
-        return;
-    }
-
-    qnode_t temp;
-    if (heap[parent].priority > heap[position].priority) {
-        temp           = heap[parent];
-        heap[parent]   = heap[position];
-        heap[position] = temp;
-        heapify_up(parent, heap);
-    }
-} /* heapify_up() */
-
 void pqueue_insert(pqueue_t *pq, void *item, u_int16_t priority)
 {
     if (!pq | !pq->heap) {
@@ -119,28 +103,22 @@ void pqueue_insert(pqueue_t *pq, void *item, u_int16_t priority)
 
 } /* pqueue_insert() */
 
-// Used after extraction to reorganize queue
-//
-static void heapify_down(u_int16_t position, u_int16_t size, qnode_t *heap)
+static void heapify_up(u_int16_t position, qnode_t *heap)
 {
-    u_int16_t lchild = 2 * position + 1;
-    u_int16_t rchild = 2 * position + 2;
-
-    if (lchild >= size) {
+    int32_t parent = (position - 1) / 2;
+    if (parent < 0) {
         return;
     }
 
-    u_int16_t swap_idx = heap[lchild].priority <
-                         heap[rchild].priority ? lchild : rchild;
-
-    if (heap[position].priority > heap[swap_idx].priority) {
-        qnode_t temp   = heap[swap_idx];
-        heap[swap_idx] = heap[position];
+    qnode_t temp;
+    if (heap[parent].priority > heap[position].priority) {
+        temp           = heap[parent];
+        heap[parent]   = heap[position];
         heap[position] = temp;
-
-        heapify_down(swap_idx, size, heap);
+        heapify_up(parent, heap);
     }
-} /* heapify_down() */
+} /* heapify_up() */
+
 
 void *pqueue_extract(pqueue_t *pq)
 {
@@ -167,9 +145,32 @@ void *pqueue_extract(pqueue_t *pq)
     return temp;
 } /* pqueue_extract() */
 
+// Used after extraction to reorganize queue
+//
+static void heapify_down(u_int16_t position, u_int16_t size, qnode_t *heap)
+{
+    u_int16_t lchild = 2 * position + 1;
+    u_int16_t rchild = 2 * position + 2;
+
+    if (lchild >= size) {
+        return;
+    }
+
+    u_int16_t swap_idx = heap[lchild].priority <
+                         heap[rchild].priority ? lchild : rchild;
+
+    if (heap[position].priority > heap[swap_idx].priority) {
+        qnode_t temp   = heap[swap_idx];
+        heap[swap_idx] = heap[position];
+        heap[position] = temp;
+
+        heapify_down(swap_idx, size, heap);
+    }
+} /* heapify_down() */
+
 bool pqueue_is_empty(pqueue_t *pq)
 {
-    return !pq || pq->count == 0;
+    return !pq || 0 == pq->count;
 } /* pqueue_is_empty() */
 
 bool pqueue_is_full(pqueue_t *pq)
